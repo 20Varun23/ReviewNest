@@ -16,9 +16,22 @@ const schema = mongoose.Schema({
   },
   age: {
     type: Number,
+    min: [18, "minimum age to register is 18"],
     required: true,
   },
 });
 
 const User = mongoose.models.User || mongoose.model("User", schema);
-export default User;
+
+import Joi from "joi";
+
+const userSchema = Joi.object({
+  user: Joi.object({
+    username: Joi.string().required(),
+    email: Joi.string().email().required(),
+    password: Joi.string().required(),
+    age: Joi.number().required(),
+  }),
+});
+
+export { User, userSchema };

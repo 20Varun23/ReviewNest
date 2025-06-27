@@ -1,4 +1,5 @@
 import mongoose, { mongo } from "mongoose";
+import Joi from "joi";
 
 const schema = mongoose.Schema({
   comment: {
@@ -8,8 +9,8 @@ const schema = mongoose.Schema({
   stars: {
     type: Number,
     required: true,
-    min: 1,
-    max: 5,
+    min: [1, "minimum rating 1"],
+    max: [5, "maximum rating 5"],
   },
   createdAt: {
     type: Date,
@@ -25,4 +26,13 @@ const schema = mongoose.Schema({
 
 const Review = mongoose.models.Review || mongoose.model("Review", schema);
 
-export default Review;
+const reviewSchema = Joi.object({
+  review: Joi.object({
+    comment: Joi.string().required(),
+    stars: Joi.number().required(),
+    createdAt: Joi.date().required(),
+    owner: Joi.any().required(),
+  }).required(),
+});
+
+export { Review, reviewSchema };

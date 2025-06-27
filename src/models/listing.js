@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
-import Review from "./review";
-import User from "./user";
+import { Review } from "./review";
+import Joi from "joi";
 
 const default_image =
   "https://images.unsplash.com/photo-1749137598868-94bde1951944?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxmZWF0dXJlZC1waG90b3MtZmVlZHw0fHx8ZW58MHx8fHx8";
@@ -56,4 +56,18 @@ schema.post("findOneAndDelete", async (listing) => {
 
 const ListItem = mongoose.models.ListItem || mongoose.model("ListItem", schema);
 
-export default ListItem;
+const listingSchema = Joi.object({
+  listing: Joi.object({
+    title: Joi.string().required(),
+    description: Joi.string(),
+    filename: Joi.string(),
+    url: Joi.string().uri(),
+    price: Joi.number().required().min(1000),
+    location: Joi.string().required(),
+    country: Joi.string().required(),
+    reviews: Joi.array(),
+    owner: Joi.any().required(),
+  }).required(),
+});
+
+export { ListItem, listingSchema };
