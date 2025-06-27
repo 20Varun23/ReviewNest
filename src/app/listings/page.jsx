@@ -1,7 +1,6 @@
 "use client";
 
 import axios from "axios";
-import Link from "next/link";
 import { useEffect, useState } from "react";
 
 export default function lsitings() {
@@ -10,7 +9,7 @@ export default function lsitings() {
   useEffect(() => {
     async function getListings() {
       try {
-        const res = await axios.get("/api/listings");
+        const res = await axios.get("api/listings");
         setListings(res.data.allListings);
       } catch (err) {
         console.log(err);
@@ -28,7 +27,7 @@ export default function lsitings() {
             <div className="flex hover:opacity-80" key={el._id}>
               <a
                 href={"/listings/" + el._id}
-                style={{ "text-decoration": "none" }}
+                style={{ textDecoration: "none" }}
               >
                 <div className="flex flex-col bg-white w-100 rounded-2xl">
                   <img
@@ -38,7 +37,9 @@ export default function lsitings() {
                   />
                   <div className="m-5">
                     <p className="text-black">{el.title}</p>
-                    <p className="text-black">Price : Rs{el.price}/night</p>
+                    <p className="text-black">
+                      Price : &#8377;{el.price}/night
+                    </p>
                   </div>
                 </div>
               </a>
@@ -47,14 +48,7 @@ export default function lsitings() {
         })}
       </div>
       <br />
-      <div>
-        <Link
-          className="bg-sky-500 hover:bg-sky-700 p-3 m-7 rounded-xl"
-          href="/listings/new"
-        >
-          Add listing
-        </Link>
-      </div>
+      <div className="flex flex-row"></div>
       <br />
     </div>
   );
