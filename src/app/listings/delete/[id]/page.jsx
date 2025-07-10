@@ -7,14 +7,38 @@ import { useRouter } from "next/navigation";
 import toast, { Toaster } from "react-hot-toast";
 
 export default function deleteView({ params }) {
+  const [canDel, setCanDel] = useState(false);
   const router = useRouter();
   const p = React.use(params);
+
+  useEffect(() => {
+    async function checkAuth() {
+      const res = await axios.get(`/api/listings/${p.id}`);
+
+      const tempEdit = res.data.listing;
+      const userResp = await axios.get(`/api/users/profile`);
+
+      console.log(tempEdit);
+
+      if (!userResp.data.id || userResp.data.id != tempEdit.owner) {
+        toast.error("auth failed");
+        router.push(`/listings/${p.id}`);
+      } else {
+        setCanDel(true);
+        console.log("correct user");
+      }
+    }
+
+    if (p.id) {
+      checkAuth();
+    }
+  });
 
   async function listingDelete(e) {
     e.preventDefault();
     console.log(`button clicked`);
     try {
-      await axios.delete(`/api/listings/${p.id}`);
+      await axios.delete(`/api/listings/${p.id}/authReq`);
       router.push(`/listings`);
       toast.success("listings got deleted");
     } catch (err) {
@@ -23,26 +47,32 @@ export default function deleteView({ params }) {
     }
   }
   return (
-    <div className="flex flex-col items-center">
-      <h1 className="text-6xl">
-        Are you sure your want to delete this listing
-      </h1>
-      <form action="" className="flex flex-row ">
-        <button
-          className="bg-red-500 hover:bg-red-700 p-3 m-7 rounded-xl"
-          onClick={listingDelete}
-        >
-          Delete listing
-        </button>
-        <Toaster />
+    <>
+      {!canDel ? (
+        <h1 className="text-6xl">Loading</h1>
+      ) : (
+        <div className="flex flex-col items-center">
+          <h1 className="text-6xl">
+            Are you sure your want to delete this listing
+          </h1>
+          <form action="" className="flex flex-row ">
+            <button
+              className="bg-red-500 hover:bg-red-700 p-3 m-7 rounded-xl"
+              onClick={listingDelete}
+            >
+              Delete listing
+            </button>
+            <Toaster />
 
-        <a
-          href={`/listings/${p.id}`}
-          className="bg-blue-500 hover:bg-blue-700 p-3 m-7 rounded-xl"
-        >
-          Go back
-        </a>
-      </form>
-    </div>
+            <a
+              href={`/listings/${p.id}`}
+              className="bg-blue-500 hover:bg-blue-700 p-3 m-7 rounded-xl"
+            >
+              Go back
+            </a>
+          </form>
+        </div>
+      )}
+    </>
   );
 }

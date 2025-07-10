@@ -1,21 +1,25 @@
 import { main } from "@/db/index";
 import { NextRequest, NextResponse } from "next/server";
-import User from "@/models/user";
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
 import getTokenData from "@/app/helpers/getTokenData";
+import { httpCodes } from "@/app/helpers/httpCodes";
+import { asyncWrap } from "@/app/helpers/asyncWrap";
 
 main();
 
 export async function GET(req) {
-  try {
+  return asyncWrap(async () => {
     const user = await getTokenData(req);
 
-    return NextResponse.json({ user: user });
-  } catch (err) {
+    if (!user) {
+      return NextResponse.json(
+        { logged: false },
+        { status: httpCodes.success }
+      );
+    }
+
     return NextResponse.json(
-      { error: "error while showing profile" },
-      { status: 500 }
+      { user: user, logged: true },
+      { status: httpCodes.success }
     );
-  }
+  });
 }

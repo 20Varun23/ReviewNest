@@ -25,12 +25,14 @@ export default function SignUp() {
 
       const res = await axios.post(`/api/users`, user);
       if (res.error) {
-        throw new Error("could not sign up user");
+        console.log(res.error);
+        toast.error("could not sign up user");
+        return;
       }
       toast.success("user got added");
       router.push("/users/login");
     } catch (err) {
-      toast.error("something went wrong there");
+      toast.error("something went wrong");
     }
   }
 

@@ -1,15 +1,15 @@
 import { main } from "@/db/index";
 import { NextRequest, NextResponse } from "next/server";
-import User from "@/models/user";
+import { User, userSchema } from "@/models/user";
 import bcrypt from "bcryptjs";
-import { userSchema } from "@/models/userSchema";
-
-//[ ]: Add server side verification
+import { asyncWrap } from "@/app/helpers/asyncWrap";
+import { httpCodes } from "@/app/helpers/httpCodes";
 
 main();
 
+//*proper
 export async function POST(req) {
-  try {
+  return asyncWrap(async () => {
     const reqBody = await req.json();
     const { username, email, password, age } = reqBody;
 
@@ -19,14 +19,14 @@ export async function POST(req) {
       console.log("user exists");
       return NextResponse.json(
         { error: "user already exists" },
-        { status: 501 }
+        { status: httpCodes.badReq }
       );
     }
 
     const salt = await bcrypt.genSalt(10);
     const hashedPass = await bcrypt.hash(password, salt);
 
-    const validate = userSchema.validate({
+    const res = userSchema.validate({
       user: {
         username,
         email,
@@ -36,8 +36,7 @@ export async function POST(req) {
     });
 
     if (res.error) {
-      throw new Error("error while validating");
-      console.log(err);
+      throw res.error;
     }
 
     const newUser = new User({
@@ -49,11 +48,8 @@ export async function POST(req) {
 
     await newUser.save();
     return NextResponse.json(
-      { message: "new user got added" },
-      { status: 500 }
+      { message: "user posted" },
+      { status: httpCodes.created }
     );
-  } catch (err) {
-    console.log(err);
-    return NextResponse.json({ error: "Could not add user" }, { status: 500 });
-  }
+  });
 }

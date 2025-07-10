@@ -5,9 +5,9 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import toast, { Toaster } from "react-hot-toast";
+import CommentCard from "@/app/components/commentCard";
 
 export default function viewListing({ params }) {
-  const router = useRouter();
   const p = React.use(params);
 
   const [view, setView] = useState(null);
@@ -33,20 +33,15 @@ export default function viewListing({ params }) {
         }
         const tempView = res.data.listing;
         setView(tempView);
-        const resp = await axios.get(`/api/users/isOwener`);
-        console.log(resp.data.userLogged);
+        const resp = await axios.get(`/api/users/profile`);
+        console.log(resp.data.logged);
 
-        if (resp.data.userLogged != null && !resp.data.userLogged) {
-          console.log("reached here");
-          return;
-        } else {
-          console.log("hello");
-          setLogged(true);
-        }
+        setLogged(resp.data.logged);
 
-        const userId = resp.data.userId;
+        const userId = resp.data.user.id;
 
         console.log(userId);
+        console.log(tempView.owner);
 
         if (userId && userId == tempView.owner) {
           setIsOwner(true);
@@ -82,33 +77,8 @@ export default function viewListing({ params }) {
       toast.success(`review got added`);
       window.location.href = `/listings/${p.id}`;
     } catch (err) {
-      toast.error(`some error occurred`);
-    }
-  }
-
-  //TODO: edit reviews
-
-  async function deleteReview(e) {
-    e.preventDefault();
-
-    try {
-      const res = await axios.delete(
-        `/api/listings/${p.id}/review/${e.target.id}`
-      );
-      if (res.error) {
-        console.log(res.error);
-        throw res.error;
-      }
-
-      console.log(res);
-      if (res.error) {
-        console.log(res.error);
-        throw res.error;
-      }
-      toast.success(`review got deleted`);
-    } catch (err) {
       console.log(err);
-      toast.error(`Something went wrong`);
+      toast.error(`some error occurred`);
     }
   }
 
@@ -163,59 +133,29 @@ export default function viewListing({ params }) {
           <div className="flex flex-col justify-center bg-theme-2 w-[75vw] items-center rounded-xl p-3">
             <h4 className="text-3xl">Reviews</h4>
             <div className="flex flex-row flex-wrap w-[100%] justify-center">
-              {
-                // TODO: add stars over here
-
-                view.reviews.length === 0 ? (
-                  logged ? (
-                    <p className="text-2xl">
-                      No reviews...Be the first to leave a review
-                    </p>
-                  ) : (
-                    <p className="text-2xl">Please log in to leave a review</p>
-                  )
+              {view.reviews.length === 0 ? (
+                logged ? (
+                  <p className="text-2xl">
+                    No reviews...Be the first to leave a review
+                  </p>
                 ) : (
-                  view.reviews.map((el) => {
-                    const d = new Date(el.createdAt);
-                    console.log(typeof d);
-                    return (
-                      <div
-                        key={el._id}
-                        className="bg-theme-5 m-2 rounded-2xl p-2 w-[90%] text-black font-bold  flex flex-row justify-between items-center"
-                      >
-                        <div className="flex flex-col">
-                          <p className="text-xl">{d.toDateString()}</p>
-                          <div className="flex flex-row justify-between">
-                            <p className="text-lh">rating : {el.stars}/5</p>
-                          </div>
-                          <p className="text-lg font-normal">{el.comment}</p>
-                        </div>
-                        {console.log(user)}
-                        {console.log(el.owner)}
-                        {user == el.owner ? (
-                          <>
-                            <button
-                              className="bg-red-500 text-lg p-1.5 rounded-xl text-white font-medium"
-                              id={`${el._id}`}
-                              onClick={(e) => {
-                                console.log(e.target.id);
-                                deleteReview(e);
-                              }}
-                            >
-                              delete
-                            </button>
-                            <Toaster />
-                          </>
-                        ) : (
-                          ""
-                        )}
-                      </div>
-                    );
-                  })
+                  <p className="text-2xl">Please log in to leave a review</p>
                 )
-              }
+              ) : (
+                view.reviews.map((el) => {
+                  return (
+                    <CommentCard
+                      el={el}
+                      user={user}
+                      pId={p.id}
+                      key={el._id}
+                    ></CommentCard>
+                  );
+                })
+              )}
             </div>
             <hr className="bg-amber-50 text-white" />
+            {console.log(logged)}
             {logged ? (
               <form className="flex flex-col m-2 items-center border-theme-3 border-2 p-1 rounded-2xl w-[80%]">
                 <p className="text-2xl m-2">
@@ -240,7 +180,7 @@ export default function viewListing({ params }) {
                   }}
                 ></textarea>
                 <button
-                  className="py-2 px-4 bg-theme-4 rounded-xl m-2"
+                  className="py-2 px-4 bg-theme-4  hover:bg-theme-3 rounded-xl m-2"
                   onClick={(e) => postReview(e)}
                 >
                   Add

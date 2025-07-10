@@ -28,11 +28,15 @@ export default function listingsNew({ params }) {
 
   useEffect(() => {
     async function getOwenerId() {
-      const res = await axios.get(`/api/users/isOwener`);
+      const res = await axios.get(`/api/users/profile`);
 
       console.log(res);
 
-      const userId = res.data.userId;
+      if (!res.data.user) {
+        router.push("/users/login");
+      }
+
+      const userId = res.data.user.id;
 
       console.log(userId);
 
@@ -68,7 +72,7 @@ export default function listingsNew({ params }) {
         owner: owner,
       };
 
-      await axios.post(`/api/listings`, sendView);
+      await axios.post(`/api/listings/authReq`, sendView);
       router.push(`/listings`);
       toast.success("successfully add the listing");
     } catch (err) {

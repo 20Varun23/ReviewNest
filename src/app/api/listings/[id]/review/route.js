@@ -1,32 +1,47 @@
+import { asyncWrap } from "@/app/helpers/asyncWrap";
+import getTokenData from "@/app/helpers/getTokenData";
+import { httpCodes } from "@/app/helpers/httpCodes";
 import { main } from "@/db/index";
-import ListItem from "@/models/listing";
-import Review from "@/models/review";
-import { reviewSchema } from "@/models/reviewSchema";
+import { ListItem } from "@/models/listing";
+import { Review, reviewSchema } from "@/models/review";
 import { NextRequest, NextResponse } from "next/server";
 
 //connect with database
 main();
+console.log("hello review");
 
 export async function POST(req, { params }) {
-  try {
+  return asyncWrap(async () => {
+    console.log("hello asyncWrap");
     const { id } = await params;
     const reqBody = await req.json();
-    const { comment, stars, createdAt, owner } = reqBody;
 
-    const res = reviewSchema.validate({ review: reqBody });
-    const newReview = new Review({
-      comment: comment,
-      stars: stars,
-      createdAt: createdAt,
-      owner: owner,
-    });
+    const temp = {
+      comment: reqBody.comment,
+      stars: reqBody.stars,
+      createdAt: reqBody.createdAt,
+      owner: reqBody.owner,
+    };
 
-    console.log("owner");
-    console.log(owner);
+    if (!temp.owner) {
+      return NextResponse.json(
+        { error: "User not logged in" },
+        { status: httpCodes.unauthorized }
+      );
+    }
+
+    const res = reviewSchema.validate({ review: { ...temp } });
 
     if (res.error) {
+      console.log(res.error);
       throw res.error;
     }
+    const newReview = new Review({
+      comment: temp.comment,
+      stars: temp.stars,
+      createdAt: temp.createdAt,
+      owner: temp.owner,
+    });
 
     const rId = await newReview.save();
 
@@ -34,9 +49,9 @@ export async function POST(req, { params }) {
     listing.reviews.unshift(rId);
     await ListItem.findByIdAndUpdate(id, listing);
 
-    return NextResponse.json({ message: "review succefully saved" });
-  } catch (err) {
-    //console.log(err);
-    return NextResponse.json({ error: err }, { status: 500 });
-  }
+    return NextResponse.json(
+      { message: "review succefully saved" },
+      { status: httpCodes.created }
+    );
+  });
 }

@@ -15,11 +15,17 @@ export default function editListing({ params }) {
 
   useEffect(() => {
     async function getEditView() {
-      const res = await axios.get(`/api/listings/edit/${p.id}`);
+      const res = await axios.get(`/api/listings/${p.id}`);
 
       const tempEdit = res.data.listing;
+      const userResp = await axios.get(`/api/users/profile`);
 
-      setEditView(tempEdit);
+      if (!userResp.data.id || userResp.data.id != tempEdit.owner) {
+        router.push(`/listings/${p.id}`);
+      } else {
+        setEditView(tempEdit);
+        console.log("correct user");
+      }
     }
 
     if (p.id) {
@@ -45,11 +51,12 @@ export default function editListing({ params }) {
       price: editView.price,
       location: editView.location,
       country: editView.country,
-      review: {},
     };
 
     try {
-      await axios.patch(`/api/listings/${p.id}`, sendView);
+      console.log("hello");
+
+      await axios.patch(`/api/listings/${p.id}/authReq`, { ...sendView });
       router.push(`/listings/${p.id}`);
       toast.success("The listing goit updated");
     } catch (err) {

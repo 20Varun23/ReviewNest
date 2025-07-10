@@ -59,5 +59,3 @@ export default function Profile() {
     </div>
   );
 }
-
-//[ ]: Add Logout functionallity

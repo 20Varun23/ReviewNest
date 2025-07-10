@@ -1,13 +1,15 @@
 import { main } from "@/db/index";
 import { NextRequest, NextResponse } from "next/server";
-import User from "@/models/user";
+import { User } from "@/models/user";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { asyncWrap } from "@/app/helpers/asyncWrap";
+import { httpCodes } from "@/app/helpers/httpCodes";
 
 main();
 
 export async function POST(req) {
-  try {
+  return asyncWrap(async () => {
     const reqBody = await req.json();
     const { email, password } = reqBody;
 
@@ -16,10 +18,9 @@ export async function POST(req) {
     const user = await User.findOne({ email: email });
 
     if (!user) {
-      console.log("could not find user");
       return NextResponse.json(
         { error: "could not find user" },
-        { status: 500 } //[ ]: find proper status code
+        { status: httpCodes.notFound }
       );
     }
 
@@ -27,7 +28,10 @@ export async function POST(req) {
 
     if (!validPassword) {
       console.log("wrong password");
-      return NextResponse.json({ error: "Invalid password" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Invalid password" },
+        { status: httpCodes.badReq }
+      );
     }
 
     const tokenData = {
@@ -41,16 +45,18 @@ export async function POST(req) {
       expiresIn: "1h",
     });
 
-    const res = NextResponse.json({
-      message: "user loged in successfully",
-      success: true,
-    });
+    const res = NextResponse.json(
+      {
+        message: "user logged in successfully",
+        success: true,
+      },
+      {
+        status: httpCodes.success,
+      }
+    );
 
     res.cookies.set("token", token, { httpOnly: true });
 
     return res;
-  } catch (err) {
-    console.log(err);
-    return NextResponse.json({ error: "could not login" }, { status: 500 });
-  }
+  });
 }

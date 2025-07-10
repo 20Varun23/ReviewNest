@@ -1,5 +1,7 @@
-import { required } from "joi";
 import mongoose from "mongoose";
+import Joi from "joi";
+import { ListItem } from "./listing";
+import { Review } from "./review";
 
 const schema = mongoose.Schema({
   username: {
@@ -21,9 +23,12 @@ const schema = mongoose.Schema({
   },
 });
 
-const User = mongoose.models.User || mongoose.model("User", schema);
+schema.post("findOneAndDelete", async (user) => {
+  await ListItem.deleteMany({ owner: user._id });
+  await Review.deleteMany({ owner: user._id });
+});
 
-import Joi from "joi";
+const User = mongoose.models.User || mongoose.model("User", schema);
 
 const userSchema = Joi.object({
   user: Joi.object({

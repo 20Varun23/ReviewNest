@@ -27,7 +27,7 @@ export default async function Navbar() {
             </Link>
             <Link
               className="justify-self-end text-base text-theme-4 border-2 rounded-2xl p-1.5 hover:bg-theme-4 hover:text-theme-2 mx-2"
-              href="users/profile"
+              href="/users/profile"
             >
               Profile
             </Link>

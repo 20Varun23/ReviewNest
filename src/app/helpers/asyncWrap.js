@@ -1,14 +1,15 @@
-const { NextResponse } = require("next/server");
-const { httpsCodes } = require("./httpCodes");
+import { NextResponse } from "next/server";
+import { httpCodes } from "./httpCodes";
 
 async function asyncWrap(fn) {
   try {
-    fn();
+    const ret = await fn();
+    return ret;
   } catch (err) {
-    console.log();
+    console.log(err);
     return NextResponse.json(
-      { error: err },
-      { status: httpsCodes.serverError }
+      { error: err.message || "Internal Server error" },
+      { status: httpCodes.serverError }
     );
   }
 }

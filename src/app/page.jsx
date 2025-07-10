@@ -28,7 +28,7 @@ export default function lsitings() {
             <div className="flex hover:opacity-80" key={el._id}>
               <a
                 href={"/listings/" + el._id}
-                style={{ "text-decoration": "none" }}
+                style={{ textDecoration: "none" }}
               >
                 <div className="flex flex-col bg-white w-100 rounded-2xl">
                   <img
@@ -47,14 +47,6 @@ export default function lsitings() {
         })}
       </div>
       <br />
-      <div>
-        <Link
-          className="bg-sky-500 hover:bg-sky-700 p-3 m-7 rounded-xl"
-          href="/listings/new"
-        >
-          Add listing
-        </Link>
-      </div>
       <br />
     </div>
   );
